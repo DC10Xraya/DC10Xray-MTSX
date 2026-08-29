@@ -12,7 +12,7 @@
 | `Mcmeta.mtsx` | Minecraft Metadata(资源包或数据包元数据) (.mcmeta) | ![预览](exppic/exp_mcmeta.jpg) |
 
 ### 📂 怎么用?
-1. 在上面下载
+1. 在源代码下载.mtsx文件或在发行下载(详见发行)
 2. 直接在MT里点击下载的.mtsx, 点击安装即可
 
 ### 纯手工整理，有些地方可能有些许偏差，凑合用。
