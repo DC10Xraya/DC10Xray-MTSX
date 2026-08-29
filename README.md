@@ -1,14 +1,23 @@
 # DC10Xray-MTSX
 我自己制作的MT管理器的语法高亮文件(MTSX)
 
-Arduino.mtsx 单片机专用
+### 📦 包含文件
 
-bash.mtsx 虽然MT已经自带了shell, 但是我这个是专门给bash的
+| 文件 | 对应语言 | 预览图 |
+| :--- | :--- | :--- |
+| `Arduino.mtsx` | Arduino (.ino) | ![预览](exp_arduino.jpg) |
+| `bash.mtsx` | Bash (.bash) | ![预览](exp_baah.jpg) |
+| `mcfunction.mtsx` | Minecraft JE 1.21+ Function (.mcfunction/.mc) | ![预览](exp_mcf.jpg) |
+| `mclog.mtsx` | Minecraft JE(客户端服务端通用)日志 (.log) | ![预览](exp_mclog.jpg) |
+| `Mcmeta.mtsx` | Minecraft Metadata(资源包或数据包元数据) (.mcmeta) | ![预览](exp_mcmeta.jpg) |
 
-mcfunction.mtsx 支持我的世界Java 1.21+的函数(数据包等)
+### 📂 怎么用?
+1. 在上面下载
+2. 直接在MT里点击下载的.mtsx, 点击安装即可
 
-mclog.mtsx 支持服务端和客户端的我的世界JAVA版日志
+### 纯手工整理，有些地方可能有些许偏差，凑合用。
 
-Mcmeta.mtsx 支持我的世界JAVA资源包(数据包)的元数据
+### 📜 许可证
+MIT License
 
-这些都是个人整理的, 可能出现偏差, 凑合着用
+Copyright (c) 2026 DC10Xray
