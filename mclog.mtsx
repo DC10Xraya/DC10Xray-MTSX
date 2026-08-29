@@ -1,0 +1,324 @@
+// mclog.mtsx
+// https://github.com/DC10Xraya/DC10Xray-MTSX
+{
+    name: ["Minecraft Log(JE)", ".log"]
+    ignoreCase: false
+
+    styles: [
+        "timestamp",  #666666, #999999, @B
+        "thread",     #0000FF, #8888FF, @B
+
+        "infoMsg",    #00AA00, #00AA00
+        "debugMsg",   #AAAAAA, #AAAAAA
+        "warnMsg",    #FFAA00, #FFAA00
+        "errorMsg",   #B22222, #B22222
+
+        "levelInfo",  #00AA00, #00AA00, @B
+        "levelDebug", #AAAAAA, #AAAAAA, @B
+        "levelWarn",  #FFAA00, #FFAA00, @B
+        "levelError", #B22222, #B22222, @B
+        "levelFatal", #B22222, #B22222, @BI
+
+        "UUID",       #DCA86A, #E2C089, @U
+
+        "clientStart",#00FFCC, #00FFCC, @BU
+        "clientStop", #B22222, #B22222, @BU
+        "serverStart",#00FFCC, #00FFCC, @BU
+        "serverStop", #B22222, #B22222, @BU
+        "serverCrash",#B22222, #B22222, @BIU
+
+        "connection", #0066FF, #0066FF
+        "url",        #0066FF, #0066FF, @BU
+
+        "disconnectBg", #000000$FF00, #FFFFFF$0500
+
+        "§0", #000000, #4A4A4A
+        "§1", #0000AA, #6B6BFF
+        "§2", #00AA00, #00AA00
+        "§3", #00AAAA, #00AAAA
+        "§4", #AA0000, #AA0000
+        "§5", #AA00AA, #AA00AA
+        "§6", #FFAA00, #FFAA00
+        "§7", #AAAAAA, #AAAAAA
+        "§8", #555555, #9A9A9A
+        "§9", #5555FF, #5555FF
+        "§a", #55FF55, #55FF55
+        "§b", #55FFFF, #55FFFF
+        "§c", #FF5555, #FF5555
+        "§d", #FF55FF, #FF55FF
+        "§e", #9A9A00, #FFFF55
+        "§f", #D0D0D0, #FFFFFF
+        "§k", @BUS
+        "§l", @B
+        "§m", @S
+        "§n", @U
+        "§o", @I
+        "§r" > "default"
+
+        "ID", #80459F, #CE93D8
+    ]
+
+    bracketPairs: ["{}", "[]", "()"]
+
+    defines: [
+        "colorCodes": {
+            group: select
+            contains: [
+                {match: "§0", 0: "§0"}, {match: "§1", 0: "§1"},
+                {match: "§2", 0: "§2"}, {match: "§3", 0: "§3"},
+                {match: "§4", 0: "§4"}, {match: "§5", 0: "§5"},
+                {match: "§6", 0: "§6"}, {match: "§7", 0: "§7"},
+                {match: "§8", 0: "§8"}, {match: "§9", 0: "§9"},
+                {match: "§a", 0: "§a"}, {match: "§b", 0: "§b"},
+                {match: "§c", 0: "§c"}, {match: "§d", 0: "§d"},
+                {match: "§e", 0: "§e"}, {match: "§f", 0: "§f"},
+                {match: "§k", 0: "§k"}, {match: "§l", 0: "§l"},
+                {match: "§m", 0: "§m"}, {match: "§n", 0: "§n"},
+                {match: "§o", 0: "§o"}, {match: "§r", 0: "§r"}
+            ]
+        },
+
+        "resource": {
+            match: /(?i)[a-z0-9_.\/-]+:[a-z0-9_.\/-]+/,
+            0: "ID"
+        },
+
+        "messageExtras": [
+            {match: /.*(?:Connecting to|Disconnected:).*/, 0: "connection"},
+            {match: /(?i)(?<!@)\b(?:https?|ftp):\/\/[^\s<>"']++/, 0: "url"},
+            {match: /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/, 0: "UUID"},
+            {include: "resource"},
+            {include: "colorCodes"}
+        ]
+    ]
+
+    contains: [
+        // ===== 断开连接（红色背景，文字颜色不变）=====
+        // INFO
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(INFO)\]:\s*(?=.*(?:连接中断|Disconnected))(.+)$/
+            0: "disconnectBg"
+            1: "timestamp"
+            2: "thread"
+            3: "levelInfo"
+            4: "infoMsg"
+            4: {include: "messageExtras"}
+        }
+        // DEBUG
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(DEBUG)\]:\s*(?=.*(?:连接中断|Disconnected))(.+)$/
+            0: "disconnectBg"
+            1: "timestamp"
+            2: "thread"
+            3: "levelDebug"
+            4: "debugMsg"
+            4: {include: "messageExtras"}
+        }
+        // WARN
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(WARN)\]:\s*(?=.*(?:连接中断|Disconnected))(.+)$/
+            0: "disconnectBg"
+            1: "timestamp"
+            2: "thread"
+            3: "levelWarn"
+            4: "warnMsg"
+            4: {include: "messageExtras"}
+        }
+        // ERROR
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(ERROR)\]:\s*(?=.*(?:连接中断|Disconnected))(.+)$/
+            0: "disconnectBg"
+            1: "timestamp"
+            2: "thread"
+            3: "levelError"
+            4: "errorMsg"
+            4: {include: "messageExtras"}
+        }
+        // FATAL
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(FATAL)\]:\s*(?=.*(?:连接中断|Disconnected))(.+)$/
+            0: "disconnectBg"
+            1: "timestamp"
+            2: "thread"
+            3: "levelFatal"
+            4: "errorMsg"
+            4: {include: "messageExtras"}
+        }
+
+        // ===== 客户端特殊事件 =====
+        {
+            match: /(?m)^.*?(Loading Minecraft|Fabric Loader|Starting Minecraft client).*$/
+            0: "clientStart"
+        }
+        {
+            match: /(?m)^.*?(Stopping!|Shutting down).*$/
+            0: "clientStop"
+        }
+
+        // ===== 服务端特殊事件 =====
+        {
+            match: /(?m)^.*?(Starting server|bound to port|Done \(|Preparing spawn).*$/
+            0: "serverStart"
+        }
+        {
+            match: /(?m)^.*?(Stopping server|Shutting down).*$/
+            0: "serverStop"
+        }
+
+        // ===== 标准日志格式（不含断开连接的常规日志）=====
+        // INFO (带线程)
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(INFO)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelInfo"
+            4: "infoMsg"
+            4: {include: "messageExtras"}
+        }
+        // DEBUG
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(DEBUG)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelDebug"
+            4: "debugMsg"
+            4: {include: "messageExtras"}
+        }
+        // WARN
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(WARN)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelWarn"
+            4: "warnMsg"
+            4: {include: "messageExtras"}
+        }
+        // ERROR
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(ERROR)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelError"
+            4: "errorMsg"
+            4: {include: "messageExtras"}
+        }
+        // FATAL
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(FATAL)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelFatal"
+            4: "errorMsg"
+            4: {include: "messageExtras"}
+        }
+        // TRACE -> debug
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(TRACE)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelDebug"
+            4: "debugMsg"
+            4: {include: "messageExtras"}
+        }
+        // CONFIG -> info
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\/(CONFIG)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "levelInfo"
+            4: "infoMsg"
+            4: {include: "messageExtras"}
+        }
+
+        // ----- 仅级别，无线程 -----
+        // INFO
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(INFO)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelInfo"
+            3: "infoMsg"
+            3: {include: "messageExtras"}
+        }
+        // DEBUG
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(DEBUG)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelDebug"
+            3: "debugMsg"
+            3: {include: "messageExtras"}
+        }
+        // WARN
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(WARN)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelWarn"
+            3: "warnMsg"
+            3: {include: "messageExtras"}
+        }
+        // ERROR
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(ERROR)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelError"
+            3: "errorMsg"
+            3: {include: "messageExtras"}
+        }
+        // FATAL
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(FATAL)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelFatal"
+            3: "errorMsg"
+            3: {include: "messageExtras"}
+        }
+        // TRACE -> debug
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(TRACE)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelDebug"
+            3: "debugMsg"
+            3: {include: "messageExtras"}
+        }
+        // CONFIG -> info
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[(CONFIG)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "levelInfo"
+            3: "infoMsg"
+            3: {include: "messageExtras"}
+        }
+
+        // ----- 仅线程，无级别 -----
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*\[([^\]]+)\]:\s*(.+)$/
+            1: "timestamp"
+            2: "thread"
+            3: "default"
+            3: {include: "messageExtras"}
+        }
+
+        // ----- 仅时间 -----
+        {
+            match: /(?m)^(\[?\d{1,2}:\d{2}:\d{2}(?:\.\d+)?\]?)\s*:\s*(.+)$/
+            1: "timestamp"
+            2: "default"
+            2: {include: "messageExtras"}
+        }
+
+        // ===== 服务端崩溃 =====
+        {
+            match: /(?m)^(?!.*fabric-crash-report-info).*?\b(?:crash|Critical|Fatal)\b.*$/
+            0: "serverCrash"
+        }
+
+        // ----- 异常堆栈 -----
+        {
+            match: /(?m)^\s*(?:at\s+|Caused by:|Suppressed:|\.\.\.\s+\d+\s+more).*$/
+            0: "errorMsg"
+        }
+        {
+            match: /(?m)^\s*(?:[a-zA-Z_][\w.]*\.)?[A-Z][a-zA-Z0-9_]*(?:Exception|Error|Throwable)\s*:.*$/
+            0: "errorMsg"
+        }
+    ]
+}

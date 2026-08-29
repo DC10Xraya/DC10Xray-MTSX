@@ -1,0 +1,433 @@
+// mcfunction.mtsx dev1.14-hotfix
+// https://github.com/DC10Xraya/DC10Xray-MTSX
+{
+name: ["Mcfunction(JE 1.21+)", ".mcfunction", ".mc"]
+ignoreCase: true
+
+comment: {startsWith: "#", insertSpace: false, addToContains: false}
+
+styles: [
+// 颜色码
+"§0", #000000, #4A4A4A
+"§1", #0000AA, #6B6BFF
+"§2", #00AA00, #00AA00
+"§3", #00AAAA, #00AAAA
+"§4", #AA0000, #AA0000
+"§5", #AA00AA, #AA00AA
+"§6", #FFAA00, #FFAA00
+"§7", #AAAAAA, #AAAAAA
+"§8", #555555, #9A9A9A
+"§9", #5555FF, #5555FF
+"§a", #55FF55, #55FF55
+"§b", #55FFFF, #55FFFF
+"§c", #FF5555, #FF5555
+"§d", #FF55FF, #FF55FF
+"§e", #9A9A00, #FFFF55
+"§f", #D0D0D0, #FFFFFF
+// 格式码
+"§k", @BUS
+"§l", @B
+"§m", @S
+"§n", @U
+"§o", @I
+"§r" > "default"
+
+// 通用样式
+"String" > "string"
+"Number" > "number"
+"Error",     #330000$FF00, #AAF50000$0500, @BU
+"Warn",      #AAF00000, #AAF00000, @BU
+"TagWarn" > "Warn", @BUI
+"Escape",    #99CC7832, #E0A060, @I
+"Command",   #AA6429, #F0984A, @B
+"Sub",       #B3AB00, #E5DF2A
+"ID",        #80459F, #CE93D8
+"Tag" > "ID", @I
+"Sele",      #A27513, #F0CD7A
+"SeleSub",   #9E8716, #F2DE7E
+"Opt",       #871F5B, #F06292
+"Macro",     #2A8B8B, #4DD0E1
+"UUID",      #B07830, #E8CF95, @U
+"Json-Sym",  #7050A0, #B39DDB
+"Json-Key",  #5796B0, #81D4FA
+"Json-String", #A46940, #E9A762
+"Json-Number", #658944, #C5E1A5
+"Json-Enum", #1C5394, #64B5F6
+"LineCont",  #99808080, #E0C0C0C0, @BUS
+"FakePlayer", #FFD700, #FFD700, @S
+]
+
+bracketPairs: ["{}", "[]", "()"]
+
+defines: [
+    // 颜色码和格式码集合
+    "colorCodes": {
+        group: select
+        contains: [
+            {match: "§0", 0: "§0"}, {match: "§1", 0: "§1"},
+            {match: "§2", 0: "§2"}, {match: "§3", 0: "§3"},
+            {match: "§4", 0: "§4"}, {match: "§5", 0: "§5"},
+            {match: "§6", 0: "§6"}, {match: "§7", 0: "§7"},
+            {match: "§8", 0: "§8"}, {match: "§9", 0: "§9"},
+            {match: "§a", 0: "§a"}, {match: "§b", 0: "§b"},
+            {match: "§c", 0: "§c"}, {match: "§d", 0: "§d"},
+            {match: "§e", 0: "§e"}, {match: "§f", 0: "§f"},
+            {match: "§k", 0: "§k"}, {match: "§l", 0: "§l"},
+            {match: "§m", 0: "§m"}, {match: "§n", 0: "§n"},
+            {match: "§o", 0: "§o"}, {match: "§r", 0: "§r"}
+        ]
+    },
+
+    // 十六进制颜色值 (#RRGGBB)
+    "hexColor": {
+        match: /#([0-9a-fA-F]{6})\b/
+        0: "parseColor(auto,1,HEX,default)"
+    },
+
+    // 双引号字符串
+    "string": {
+        start: {match: /"/},
+        end: {match: /(?m)"|(?<!\\)$/},
+        style: "String"
+        contains: [
+            {match: /\\(?=\r?\n)/, 0: "LineCont"},
+            {match: /\\([nrtv\\'"0]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/, 0: "Escape"},
+            {match: /\\./, 0: "Error"},
+            {include: "colorCodes"},
+            {include: "uuid"},
+            {include: "hexColor"}
+        ]
+    },
+
+    // 单引号字符串
+    "singleString": {
+        start: {match: /'/}
+        end: {match: /(?m)'|(?<!\\)$/}
+        style: "String"
+        contains: [
+            {match: /\\(?=\r?\n)/, 0: "LineCont"},
+            {match: /\\([nrtv\\'"0]|x[0-9a-fA-F]{2})/, 0: "Escape"},
+            {match: /\\./, 0: "Error"},
+            {include: "colorCodes"},
+            {include: "uuid"},
+            {include: "hexColor"}
+        ]
+    },
+
+    // JSON 双引号字符串(值)
+    "jsonString": {
+        start: {match: /"/}
+        end: {match: /(?m)"|(?<!\\)$/}
+        style: "Json-String"
+        contains: [
+            {match: /\\(?=\r?\n)/, 0: "LineCont"},
+            {match: /\\([nrtv\\'"0]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/, 0: "Escape"},
+            {match: /\\./, 0: "Error"},
+            {include: "colorCodes"},
+            {include: "uuid"},
+            {include: "hexColor"}
+        ]
+    },
+
+    // JSON 单引号字符串(值)
+    "jsonSingleString": {
+        start: {match: /'/}
+        end: {match: /(?m)'|(?<!\\)$/}
+        style: "Json-String"
+        contains: [
+            {match: /\\(?=\r?\n)/, 0: "LineCont"},
+            {match: /\\([nrtv\\'"0]|x[0-9a-fA-F]{2})/, 0: "Escape"},
+            {match: /\\./, 0: "Error"},
+            {include: "colorCodes"},
+            {include: "uuid"},
+            {include: "hexColor"}
+        ]
+    },
+
+    // 数字
+    "number": {
+        number: "10|F|E"
+        iSuffixes: "b|s|l"
+        fSuffixes: "f|d"
+        style: "Number"
+    },
+
+    // JSON 数字
+    "jsonNumber": {
+        number: "10|F|E"
+        iSuffixes: "b|s|l"
+        fSuffixes: "f|d"
+        style: "Json-Number"
+    },
+
+    // 布尔常量
+    "boolean": {
+        match: keywordsToRegex("true false"), 0: "Json-Enum"
+    },
+
+    // null
+    "jsonNull": {
+        match: /\bnull\b/, 0: "Json-Enum"
+    },
+
+    // 坐标
+    "coordinate": {
+        match: /[~^](-?\d+(\.\d+)?)?/, 0: "Number"
+    },
+
+    // 范围
+    "range": {
+        match: /\.\./, 0: "Opt"
+    },
+
+    // 宏变量（仅 $(变量名) 格式）
+    "macroVar": {
+        match: /\$\([a-zA-Z_]\w*\)/,
+        0: "Opt"
+    },
+
+    // 宏函数整行（支持反斜杠续行）
+    "macroFunction": {
+        start: {match: /(?m)^\$\s*(?=[a-zA-Z])/}
+        end: {match: /(?m)(?<!\\)$/}          // 多行模式，匹配不以反斜杠结尾的行尾
+        style: "Macro"
+        contains: [
+            {include: "macroVar"},
+            {match: /\\\r?\n/, 0: "LineCont"},          // 续行符本身高亮
+            {match: /\$[^\(]|\$\([^)]*$/, 0: "Error"}   // 无效宏变量（单独的$或未闭合的$(）
+        ]
+    },
+
+    // UUID
+    "uuid": {
+        group: select
+        contains: [
+            {match: /\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/, 0: "UUID"},
+            {match: /\b[0-9a-fA-F]{32}\b/, 0: "UUID"},
+            {match: /\[I;(?:-?\d+),(?:-?\d+),(?:-?\d+),(?:-?\d+)\]/, 0: "UUID"}
+        ]
+    },
+
+    // 资源定位符
+    "resource": {
+        group: select
+        contains: [
+            {match: /(?-i)(?=[-a-zA-Z0-9_.\/]*:[-a-zA-Z0-9_.\/]*[A-Z])[-a-zA-Z0-9_.\/]*:[-a-zA-Z0-9_.\/]+/, 0: "Warn"},
+            {match: /(?-i)[-a-z0-9_.\/]*:[-a-z0-9_.\/]+/, 0: "ID"}
+        ]
+    },
+
+    // 方括号参数
+    "bracketParams": {
+        start: {match: /\[/}
+        end: {match: /\]/}
+        style: "SeleSub"
+        contains: [
+            {match: /([a-zA-Z_][\w:]*)\s*(?==)/, 1: "Sele"},
+            {match: /=/, 0: "Json-Sym"},
+            {match: /,/, 0: "Json-Sym"},
+            {match: /!/, 0: "Json-Sym"},
+            {include: "range"},
+            {include: "genericValue"}
+        ]
+    },
+
+    // 目标选择器
+    "selector": {
+        start: {match: /@[praesn]/}
+        end: {match: /(?=\s|$)/}
+        style: "Sele"
+        contains: [
+            {include: "bracketParams"}
+        ]
+    },
+
+    // NBT 路径
+    "nbtPath": {
+        match: /\b[a-zA-Z_]\w*(?:(?:\.\w+|\[\d+\]|\["[^"]*"\]|\[('[^']*')\]|\[\]))+\b/,
+        0: "SeleSub"
+    },
+
+    // NBT 对象 / JSON 对象
+    "nbtObject": {
+        start: {match: /\{/}
+        end: {match: /\}/}
+        style: "SeleSub"
+        contains: [
+            {match: /([a-zA-Z_]\w*)\s*(?=:)/, 1: "Sele"},
+            {match: /("(?:[^"\\]|\\.)*")\s*(?=:)/, 0: "Json-Key"},
+            {match: /('(?:[^'\\]|\\.)*')\s*(?=:)/, 0: "Json-Key"},
+            {match: /::/, 0: "Error"},
+            {match: /:/, 0: "Json-Sym"},
+            {match: /,,/, 0: "Error"},
+            {match: /,/, 0: "Json-Sym"},
+            {include: "jsonString"},
+            {include: "jsonSingleString"},
+            {include: "jsonNumber"},
+            {include: "boolean"},
+            {include: "jsonNull"},
+            {include: "uuid"},
+            {include: "nbtObject"},
+            {include: "nbtList"},
+            {include: "nbtArray"},
+            {include: "genericValue"}
+        ]
+    },
+
+    // NBT 列表 / JSON 数组
+    "nbtList": {
+        start: {match: /\[/}
+        end: {match: /\]/}
+        style: "SeleSub"
+        contains: [
+            {match: /,,/, 0: "Error"},
+            {match: /,/, 0: "Json-Sym"},
+            {include: "jsonString"},
+            {include: "jsonSingleString"},
+            {include: "jsonNumber"},
+            {include: "boolean"},
+            {include: "jsonNull"},
+            {include: "uuid"},
+            {include: "nbtObject"},
+            {include: "nbtList"},
+            {include: "nbtArray"},
+            {include: "genericValue"}
+        ]
+    },
+
+    // NBT 数组
+    "nbtArray": {
+        start: {match: /\[[BILbil];\s*/}
+        end: {match: /\]/}
+        style: "SeleSub"
+        contains: [
+            {include: "number"},
+            {match: /,/, 0: "Json-Sym"}
+        ]
+    },
+
+    // 通用值
+    "genericValue": {
+        group: select
+        contains: [
+            {include: "string"},
+            {include: "singleString"},
+            {include: "number"},
+            {include: "boolean"},
+            {include: "coordinate"},
+            {include: "uuid"},
+            {include: "resource"},
+            {include: "range"},
+            {include: "nbtPath"},
+            {include: "nbtObject"},
+            {include: "nbtArray"},
+            {include: "nbtList"},
+            {include: "bracketParams"},
+            {include: "hexColor"},
+            {match: /\\(?=\r?\n)/, 0: "LineCont"}
+        ]
+    },
+
+    // 物品堆
+    "itemStack": {
+        group: link
+        contains: [
+            {include: "resource"},
+            {include: "bracketParams"}
+        ]
+    },
+
+    // execute 子命令
+    "executeSub": {
+        match: keywordsToRegex(
+            "as at positioned align anchored facing in if unless run store result success " +
+            "entity block items score predicate function data biome loaded dimension " +
+            "on attacker controller leasher origin owner passenger target vehicle " +
+            "bossbar storage rotated matches"
+        ), 0: "Sub"
+    },
+
+    // 其他子命令/参数
+    "generalSub": {
+        match: keywordsToRegex(
+            "objectives players add remove set list display " +
+            "get merge modify remove from value append prepend " +
+            "join leave empty " +
+            "center damage buffer warning " +
+            "query " +
+            "clear rain thunder " +
+            "stop " +
+            "replace masked filtered " +
+            "structure biome poi " +
+            "insert " +
+            "peaceful easy normal hard " +
+            "survival creative adventure spectator " +
+            "list ips players " +
+            "start stop function " +
+            "flush " +
+            "teleport " +
+            "under " +
+            "keep destroy " +
+            "title subtitle actionbar clear reset " +
+            "raw " +
+            "facing"
+        ), 0: "Sub"
+    },
+
+    // 主命令
+    "commands": {
+        match: keywordsToRegex(
+            "advancement attribute ban ban-ip banlist bossbar clear clone damage data datapack debug " +
+            "defaultgamemode deop difficulty effect enchant execute fill fillbiome forceload function " +
+            "gamemode gamerule give help item kick kill list locate loot me msg op pardon particle place " +
+            "playsound publish random recipe reload return ride rotate say schedule scoreboard seed setblock " +
+            "setworldspawn spawnpoint spreadplayers stop stopsound summon tag team teammsg " +
+            "tell tellraw tick time title tp trigger weather whitelist worldborder xp"
+        ), 0: "Command"
+    }
+]
+
+contains: [
+    // 标签（#namespace:path），合法全小写加斜体，不完整或含大写警告
+    {
+        group: select
+        contains: [
+            {match: /#(?-i)[-\w.\/]+:(?![-\w.\/])/, 0: "TagWarn"},
+            {match: /#(?-i)(?=.*[A-Z])[-\w.\/]+:[-\w.\/]+/, 0: "TagWarn"},
+            {match: /#(?-i)[a-z0-9_.\/-]+:[a-z0-9_.\/-]+/, 0: "Tag"}
+        ]
+    },
+
+    // 假玩家名称（#identifier）—— 不含冒号
+    {match: /#(?![a-zA-Z0-9_]*:)[a-zA-Z0-9_]+\b/, 0: "FakePlayer"},
+
+    // 注释（仅匹配行首的 #，可带前导空白）
+    {match: /(?m)^\s*#.*$/, 0: "comment"},
+
+    // 行内其他非法 #（如 #! 或单个 #）→ 报错
+    {match: /#[^\s]*/, 0: "Error"},
+
+    {include: "macroFunction"},
+    {include: "selector"},
+    {include: "itemStack"},
+    {include: "uuid"},
+    {include: "nbtArray"},
+    {include: "nbtObject"},
+    {include: "nbtList"},
+    {include: "nbtPath"},
+    {include: "string"},
+    {include: "singleString"},
+    {include: "coordinate"},
+    {include: "number"},
+    {include: "boolean"},
+    {include: "resource"},
+    {include: "range"},
+    {include: "hexColor"},
+    {include: "commands"},
+    {include: "executeSub"},
+    {include: "generalSub"},
+    // 续行符（全局），但宏函数已优先匹配，不会影响宏函数行
+    {match: /\\(?=\r?\n)/, 0: "LineCont"},
+    {match: /[-a-z0-9_.\/]+:(?![a-z0-9_\/\-])/, 0: "Warn"}
+]
+}

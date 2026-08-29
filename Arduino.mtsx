@@ -1,0 +1,170 @@
+// Arduino.mtsx
+// https://github.com/DC10Xraya/DC10Xray-MTSX
+{
+    name: ["Arduino", ".ino"]
+
+    styles: [
+        "preprocessor" > "meta"
+        "namespace" > "type"
+        "arduinoFunction" > "keyword", @B
+        "arduinoConstant" > "constant"
+    ]
+
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    bracketPairs: ["{}", "[]", "()", "<>"]
+
+    defines: [
+        "identifier": /[a-zA-Z_]\w*/
+        "typeName": [
+            // 大写开头单词（通常为用户自定义类型或类名）
+            {match: /\b[A-Z]\w*\b/, 0: "type"}
+            // 常用标准类型与Arduino特有类型（全小写或混合）
+            {match: keywordsToRegex(
+                "size_t ssize_t ptrdiff_t intptr_t uintptr_t"
+                "int8_t int16_t int32_t int64_t"
+                "uint8_t uint16_t uint32_t uint64_t"
+                "FILE DIR time_t clock_t"
+                "string wstring u8string u16string u32string"
+                "vector list map set deque queue stack"
+                "shared_ptr unique_ptr weak_ptr"
+                "iostream istream ostream fstream"
+                "nullptr_t"
+                // Arduino 常用库类名
+                "Serial Wire SPI Ethernet WiFi"
+                "LiquidCrystal Servo Stepper SD File"
+                "HardwareSerial Stream Client Server"
+                // Arduino 内置类型别名
+                "byte word boolean String"
+            ), 0: "type"}
+        ]
+        "arduinoFunctions": keywordsToRegex(
+            "setup loop"
+            "pinMode digitalWrite digitalRead analogWrite analogRead"
+            "delay delayMicroseconds millis micros"
+            "Serial.begin Serial.print Serial.println Serial.write Serial.read Serial.available Serial.peek"
+            "Wire.begin Wire.requestFrom Wire.write Wire.read"
+            "SPI.begin SPI.transfer SPI.endTransaction"
+            "Ethernet.begin WiFi.begin WiFi.status"
+            "LiquidCrystal.begin LiquidCrystal.print LiquidCrystal.setCursor"
+            "Servo.attach Servo.write Servo.read"
+            "Stepper.setSpeed Stepper.step"
+            "SD.begin SD.open File.read File.write"
+            "random randomSeed map constrain min max abs"
+            "attachInterrupt detachInterrupt interrupts noInterrupts"
+            "tone noTone shiftOut shiftIn pulseIn"
+            "analogReference"
+            "yield"
+        )
+        "arduinoConstants": keywordsToRegex(
+            "HIGH LOW"
+            "INPUT OUTPUT INPUT_PULLUP"
+            "LED_BUILTIN"
+            "true false"
+            "A0 A1 A2 A3 A4 A5 A6 A7"
+            "D0 D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11 D12 D13"
+            "SERIAL"
+        )
+    ]
+
+    contains: [
+        // ---------- Arduino 特定匹配器（优先） ----------
+        // Arduino 函数调用，如 pinMode(13, OUTPUT)
+        {match: "(" + include("arduinoFunctions") + ")" + /\s*\(/, 1: "arduinoFunction"}
+        // Arduino 常量，如 HIGH, A0
+        {match: include("arduinoConstants"), 0: "arduinoConstant"}
+
+        // ---------- C++ 通用规则 ----------
+        // 原始字符串字面量 R"delimiter(...)delimiter"
+        {match: /(?s)(R"(\w*)\()/ + /(.*?)/ + /(\)\2")/, 1: "keyword", 3: "string", 4: "keyword"}
+
+        // 字符串和字符（支持 L"" u8"" u"" U"" 前缀，包含转义错误处理）
+        {builtin: #C_QUOTED_STRING#}
+
+        // 数字（支持各种进制、后缀、C++14单引号分隔）
+        {builtin: #C_NUMBER#}
+
+        // #include 带尖括号
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<[^>]+>)/, 1: "preprocessor", 2: "string"}
+
+        // #include 带引号（只匹配指令，字符串由 C_QUOTED_STRING 处理）
+        {match: /(?m)^[ \t]*(#[ \t]*include)\b/, 1: "preprocessor"}
+
+        // #define 宏定义（支持续行符 \）
+        {
+            start: {match: /(?m)^[ \t]*(#[ \t]*define)\s+(/ + include("identifier") + /)/, 1: "preprocessor", 2: "constant"}
+            end: {match: /(?m)(?<!\\)$/}
+            style: "default"
+            contains: [
+                {builtin: #C_QUOTED_STRING#}
+                {builtin: #C_NUMBER#}
+                {match: /\\$/, 0: "preprocessor"}
+            ]
+        }
+
+        // 其他预处理指令（#if, #endif, #pragma等）
+        {match: /(?m)^[ \t]*(#[ \t]*\w+)/, 1: "preprocessor"}
+
+        // C++ 标准关键字
+        {match: keywordsToRegex(
+            "alignas alignof and and_eq asm auto bitand bitor bool break case catch"
+            "char char8_t char16_t char32_t class compl concept const const_cast consteval"
+            "constexpr constinit continue co_await co_return co_yield decltype default"
+            "delete do double dynamic_cast else enum explicit export extern false float"
+            "for friend goto if inline int long mutable namespace new noexcept not not_eq"
+            "nullptr operator or or_eq private protected public register reinterpret_cast"
+            "requires return short signed sizeof static static_assert static_cast struct"
+            "switch template this thread_local throw true try typedef typeid typename"
+            "union unsigned using virtual void volatile wchar_t while xor xor_eq"
+            "restrict _Bool _Complex _Imaginary _Alignas _Alignof _Atomic"
+            "_Static_assert _Noreturn _Thread_local _Generic"
+        ), 0: "keyword"}
+
+        // Microsoft 扩展关键字
+        {match: keywordsToRegex(
+            "__alignof __asm __assume __based __cdecl __declspec __event __except"
+            "__fastcall __finally __forceinline __hook __if_exists __if_not_exists"
+            "__inline __int8 __int16 __int32 __int64 __interface __leave __m64 __m128"
+            "__m128d __m128i __ptr32 __ptr64 __raise __restrict __single_inheritance"
+            "__sptr __stdcall __super __thiscall __unaligned __unhook __uptr __uuidof"
+            "__vectorcall __virtual_inheritance __multiple_inheritance __w64 __wchar_t"
+        ), 0: "keyword2"}
+
+        // C++/CLI 和 C++/CX 关键字
+        {match: keywordsToRegex(
+            "__abstract __box __delegate __gc __identifier __nogc __noop __pin"
+            "__property __sealed __try_cast __value abstract array as_friend"
+            "delegate event finally gcnew generic initonly interior_ptr literal"
+            "property safecast sealed"
+        ), 0: "keyword2"}
+
+        // 纯布尔/空值常量（当未被 Arduino 常量覆盖时）
+        {match: keywordsToRegex("true false nullptr NULL"), 0: "constant"}
+
+        // namespace 声明/使用
+        {match: /\b(namespace)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "namespace"}
+        {match: /\b(using)\s+(namespace)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "keyword", 3: "namespace"}
+
+        // 类型定义（typedef/using 关键字）
+        {match: /\b(typedef|using)\s+/, 1: "keyword"}
+
+        // class/struct/union/enum 定义
+        {match: /\b(class|struct|union|enum)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "type"}
+
+        // template 声明
+        {match: /\b(template)\s*</, 1: "keyword"}
+
+        // 作用域解析运算符 ::
+        {match: /::/, 0: "operator"}
+
+        // 全大写常量（自定义宏等，必须放在 typeName 之前，避免被误识别为类型）
+        {match: /\b[A-Z][A-Z0-9_]{2,}\b/, 0: "constant"}
+
+        // 类型名（用户自定义类型与已知类型库）
+        {include: "typeName"}
+
+        // 通用函数调用（如 myFunc()）
+        {match: /\b(/ + include("identifier") + /)(?=\s*\()/, 1: "variable"}
+    ]
+}

@@ -1,0 +1,128 @@
+// Mcmeta.mtsx dev
+// https://github.com/DC10Xraya/DC10Xray-MTSX
+{
+name: ["Mcmeta", ".mcmeta"]
+ignoreCase: false
+
+styles: [
+// 颜色码（§0-§f）固定颜色
+"§0", #000000, #4A4A4A
+"§1", #0000AA, #6B6BFF
+"§2", #00AA00, #00AA00
+"§3", #00AAAA, #00AAAA
+"§4", #AA0000, #AA0000
+"§5", #AA00AA, #AA00AA
+"§6", #FFAA00, #FFAA00
+"§7", #AAAAAA, #AAAAAA
+"§8", #555555, #9A9A9A
+"§9", #5555FF, #5555FF
+"§a", #55FF55, #55FF55
+"§b", #55FFFF, #55FFFF
+"§c", #FF5555, #FF5555
+"§d", #FF55FF, #FF55FF
+"§e", #9A9A00, #FFFF55
+"§f", #D0D0D0, #FFFFFF
+// 格式码
+"§k", @BSU
+"§l", @B
+"§m", @S
+"§n", @U
+"§o", @I
+"§r" > "default"
+"unknown-key" > "type", @UI     //如果不是下面的字段,则标为未知
+]
+
+    bracketPairs: ["{}", "[]", "()"]
+
+    defines: [
+        "colorCodes": {
+            group: select
+            contains: [
+                {match: "§0", 0: "§0"}, {match: "§1", 0: "§1"},
+                {match: "§2", 0: "§2"}, {match: "§3", 0: "§3"},
+                {match: "§4", 0: "§4"}, {match: "§5", 0: "§5"},
+                {match: "§6", 0: "§6"}, {match: "§7", 0: "§7"},
+                {match: "§8", 0: "§8"}, {match: "§9", 0: "§9"},
+                {match: "§a", 0: "§a"}, {match: "§b", 0: "§b"},
+                {match: "§c", 0: "§c"}, {match: "§d", 0: "§d"},
+                {match: "§e", 0: "§e"}, {match: "§f", 0: "§f"},
+                {match: "§k", 0: "§k"}, {match: "§l", 0: "§l"},
+                {match: "§m", 0: "§m"}, {match: "§n", 0: "§n"},
+                {match: "§o", 0: "§o"}, {match: "§r", 0: "§r"}
+            ]
+        }
+
+        "hexColor": {
+            match: /#([0-9a-fA-F]{6})\b/
+            0: "parseColor(auto,1,HEX,default)"
+        }
+
+        "string": {
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            style: "string"
+            contains: [
+                // 只匹配合法的 JSON 转义序列,非法转义保持默认
+                {match: /\\([\\"\/bfnrt]|u[0-9a-fA-F]{4})/, 0: "strEscape"}
+                {include: "colorCodes"}
+                {include: "hexColor"}
+            ]
+        }
+
+        "number": {
+            builtin: #NORMAL_NUMBER#
+        }
+
+        "constant": {
+            match: keywordsToRegex("true false null"), 0: "keyword"
+        }
+
+        "object": {
+            start: {match: /\{/}
+            end: {match: /\}/}
+            contains: [
+                {
+                    // 包含所有官方字段、遗留字段及子字段
+                    match: /"(\s*)(pack|description|pack_format|supported_formats|min_format|max_format|min_inclusive|max_inclusive|filter|block|namespace|features|enabled|overlays|entries|directory|language|name|region|bidirectional)\s*"(?=\s*:)/
+                    0: "string"
+                    1: "default"
+                    2: "type"
+                }
+                {
+                    match: /"([^"]*)"(?=\s*:)/
+                    0: "string"
+                    1: "unknown-key"
+                }
+                {match: /:/, 0: "operator"}
+                {include: "value"}
+                {match: /,/, 0: "operator"}
+            ]
+        }
+
+        "array": {
+            start: {match: /\[/}
+            end: {match: /\]/}
+            contains: [
+                {include: "value"}
+                {match: /,/, 0: "operator"}
+            ]
+        }
+
+        "value": {
+            group: select
+            contains: [
+                {include: "string"}
+                {include: "number"}
+                {include: "constant"}
+                {include: "object"}
+                {include: "array"}
+            ]
+        }
+    ]
+
+    contains: [
+        {include: "hexColor"}
+        {include: "object"}
+        {include: "colorCodes"}
+    ]
+}
